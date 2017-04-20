@@ -16,31 +16,20 @@
 
 package org.jetbrains.kotlin.checkers
 
-import org.jetbrains.kotlin.config.LanguageVersionSettings
-import org.jetbrains.kotlin.context.ModuleContext
+import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.diagnostics.DiagnosticUtils.hasError
 import org.jetbrains.kotlin.js.analyzer.JsAnalysisResult
+import org.jetbrains.kotlin.js.config.JsConfig
 import org.jetbrains.kotlin.js.facade.K2JSTranslator
 import org.jetbrains.kotlin.js.facade.MainCallParameters
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingTrace
 
 abstract class AbstractDiagnosticsTestWithJsStdLibAndBackendCompilation : AbstractDiagnosticsTestWithJsStdLib() {
-    override fun analyzeModuleContents(
-            moduleContext: ModuleContext,
-            files: List<KtFile>,
-            moduleTrace: BindingTrace,
-            languageVersionSettings: LanguageVersionSettings,
-            separateModules: Boolean
-    ): JsAnalysisResult {
-        val analysisResult = super.analyzeModuleContents(moduleContext, files, moduleTrace, languageVersionSettings, separateModules)
-        val diagnostics = analysisResult.bindingTrace.bindingContext.diagnostics
+    override fun onAnalysisCompleted(trace: BindingTrace, module: ModuleDescriptor, files: List<KtFile>) {
+        if (hasError(trace.bindingContext.diagnostics)) return
 
-        if (!hasError(diagnostics)) {
-            val translator = K2JSTranslator(config)
-            translator.translate(files, MainCallParameters.noCall(), analysisResult)
-        }
-
-        return analysisResult
+        val translator = K2JSTranslator(JsConfig(project, environment.configuration))
+        translator.translate(files, MainCallParameters.noCall(), JsAnalysisResult(trace, module))
     }
 }
