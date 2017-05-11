@@ -1061,6 +1061,11 @@ public class KotlinExpressionParsing extends AbstractKotlinParsing {
      * modifiers declarationRest
      */
     private boolean parseLocalDeclaration(boolean rollbackIfDefinitelyNotExpression, boolean isScriptTopLevel) {
+        PsiBuilder.Marker scriptInitializer = null;
+        if (isScriptTopLevel) {
+            scriptInitializer = mark();
+        }
+
         PsiBuilder.Marker decl = mark();
         KotlinParsing.ModifierDetector detector = new KotlinParsing.ModifierDetector();
         myKotlinParsing.parseModifierList(detector, DEFAULT, TokenSet.EMPTY);
@@ -1071,10 +1076,22 @@ public class KotlinExpressionParsing extends AbstractKotlinParsing {
             // we do not attach preceding comments (non-doc) to local variables because they are likely commenting a few statements below
             closeDeclarationWithCommentBinders(decl, declType,
                                                declType != KtNodeTypes.PROPERTY && declType != KtNodeTypes.DESTRUCTURING_DECLARATION);
+
+            if (scriptInitializer != null) {
+                if (declType == KtNodeTypes.DESTRUCTURING_DECLARATION) {
+                    scriptInitializer.done(KtNodeTypes.SCRIPT_INITIALIZER);
+                }
+                else {
+                    scriptInitializer.drop();
+                }
+            }
             return true;
         }
         else {
             decl.rollbackTo();
+            if (scriptInitializer != null) {
+                scriptInitializer.drop();
+            }
             return false;
         }
     }
