@@ -131,6 +131,7 @@ private fun renamePackages(protoPath: String, outPath: String) {
     javaFile.writeText(
             javaFile.readLines().map { line ->
                 line.replace("com.google.protobuf", "org.jetbrains.kotlin.protobuf")
+                    .replace("              unknownFieldsOutput);", "              unknownFieldsOutput, 1);")
             }.joinToString(LineSeparator.getSystemLineSeparator().separatorString)
     )
 }
