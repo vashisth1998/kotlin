@@ -26,11 +26,13 @@ import javax.lang.model.element.TypeElement
 import javax.lang.model.element.TypeParameterElement
 import javax.lang.model.type.*
 
-sealed class SymbolBasedType<out T : TypeMirror>(val typeMirror: T,
-                                                 val javac: JavacWrapper) : JavaType, JavaAnnotationOwner {
+sealed class SymbolBasedType<out T : TypeMirror>(
+        val typeMirror: T,
+        val javac: JavacWrapper
+) : JavaType, JavaAnnotationOwner {
 
     companion object {
-        fun <TM : TypeMirror> create(t: TM, javac: JavacWrapper) = when {
+        fun <T : TypeMirror> create(t: T, javac: JavacWrapper) = when {
             t.kind.isPrimitive || t.kind == TypeKind.VOID -> SymbolBasedPrimitiveType(t, javac)
             t.kind == TypeKind.DECLARED || t.kind == TypeKind.TYPEVAR -> SymbolBasedClassifierType(t, javac)
             t.kind == TypeKind.WILDCARD -> SymbolBasedWildcardType(t as WildcardType, javac)
@@ -55,21 +57,25 @@ sealed class SymbolBasedType<out T : TypeMirror>(val typeMirror: T,
 
 }
 
-class SymbolBasedPrimitiveType(typeMirror: TypeMirror,
-                               javac: JavacWrapper) : SymbolBasedType<TypeMirror>(typeMirror, javac), JavaPrimitiveType {
+class SymbolBasedPrimitiveType(
+        typeMirror: TypeMirror,
+        javac: JavacWrapper
+) : SymbolBasedType<TypeMirror>(typeMirror, javac), JavaPrimitiveType {
 
     override val type: PrimitiveType?
         get() = if (typeMirror.kind == TypeKind.VOID) null else JvmPrimitiveType.get(typeMirror.toString()).primitiveType
 
 }
 
-class SymbolBasedClassifierType<out T : TypeMirror>(typeMirror: T,
-                                                    javac: JavacWrapper) : SymbolBasedType<T>(typeMirror, javac), JavaClassifierType {
+class SymbolBasedClassifierType<out T : TypeMirror>(
+        typeMirror: T,
+        javac: JavacWrapper
+) : SymbolBasedType<T>(typeMirror, javac), JavaClassifierType {
 
     override val classifier: JavaClassifier?
         get() = when (typeMirror.kind) {
-            TypeKind.DECLARED -> ((typeMirror as DeclaredType).asElement() as Symbol.ClassSymbol).let {
-                SymbolBasedClass(it, javac, it.classfile)
+            TypeKind.DECLARED -> ((typeMirror as DeclaredType).asElement() as Symbol.ClassSymbol).let { symbol ->
+                SymbolBasedClass(symbol, javac, symbol.classfile)
             }
             TypeKind.TYPEVAR -> SymbolBasedTypeParameter((typeMirror as TypeVariable).asElement() as TypeParameterElement, javac)
             else -> null
@@ -77,10 +83,11 @@ class SymbolBasedClassifierType<out T : TypeMirror>(typeMirror: T,
 
     override val typeArguments: List<JavaType>
         get() = if (typeMirror.kind == TypeKind.DECLARED) {
-            (typeMirror as DeclaredType).typeArguments.map { create(it, javac) }
-        } else {
-            emptyList()
-        }
+                    (typeMirror as DeclaredType).typeArguments.map { create(it, javac) }
+                }
+                else {
+                    emptyList()
+                }
 
     override val isRaw: Boolean
         get() = when {
@@ -97,13 +104,15 @@ class SymbolBasedClassifierType<out T : TypeMirror>(typeMirror: T,
 
 }
 
-class SymbolBasedWildcardType(typeMirror: WildcardType,
-                              javac: JavacWrapper) : SymbolBasedType<WildcardType>(typeMirror, javac), JavaWildcardType {
+class SymbolBasedWildcardType(
+        typeMirror: WildcardType,
+        javac: JavacWrapper
+) : SymbolBasedType<WildcardType>(typeMirror, javac), JavaWildcardType {
 
     override val bound: JavaType?
-        get() = typeMirror.let {
-            val boundMirror = it.extendsBound ?: it.superBound
-            boundMirror?.let { create(it, javac) }
+        get() {
+            val boundMirror = typeMirror.extendsBound ?: typeMirror.superBound
+            return boundMirror?.let { create(it, javac) }
         }
 
     override val isExtends: Boolean
@@ -111,8 +120,10 @@ class SymbolBasedWildcardType(typeMirror: WildcardType,
 
 }
 
-class SymbolBasedArrayType(typeMirror: ArrayType,
-                           javac: JavacWrapper) : SymbolBasedType<ArrayType>(typeMirror, javac), JavaArrayType {
+class SymbolBasedArrayType(
+        typeMirror: ArrayType,
+        javac: JavacWrapper
+) : SymbolBasedType<ArrayType>(typeMirror, javac), JavaArrayType {
 
     override val componentType: JavaType
         get() = create(typeMirror.componentType, javac)

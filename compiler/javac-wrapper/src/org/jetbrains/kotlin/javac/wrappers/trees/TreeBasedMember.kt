@@ -24,16 +24,21 @@ import org.jetbrains.kotlin.load.java.structure.JavaClass
 import org.jetbrains.kotlin.load.java.structure.JavaMember
 import org.jetbrains.kotlin.name.FqName
 
-abstract class TreeBasedMember<out T : JCTree>(tree: T,
-                                               treePath: TreePath,
-                                               override val containingClass: JavaClass,
-                                               javac: JavacWrapper) : TreeBasedElement<T>(tree, treePath, javac), JavaMember {
+abstract class TreeBasedMember<out T : JCTree>(
+        tree: T,
+        treePath: TreePath,
+        override val containingClass: JavaClass,
+        javac: JavacWrapper
+) : TreeBasedElement<T>(tree, treePath, javac), JavaMember {
 
     override val isDeprecatedInJavaDoc: Boolean
         get() = false
 
-    override val annotations: Collection<JavaAnnotation> by lazy { tree.annotations().map { TreeBasedAnnotation(it, treePath, javac) } }
+    override val annotations: Collection<JavaAnnotation> by lazy {
+        tree.annotations().map { TreeBasedAnnotation(it, treePath, javac) }
+    }
 
-    override fun findAnnotation(fqName: FqName) = annotations.find { it.classId?.asSingleFqName() == fqName }
+    override fun findAnnotation(fqName: FqName) =
+            annotations.find { it.classId?.asSingleFqName() == fqName }
 
 }

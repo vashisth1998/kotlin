@@ -23,12 +23,13 @@ import org.jetbrains.kotlin.load.java.structure.JavaClassifier
 import org.jetbrains.kotlin.name.FqName
 import javax.lang.model.element.Element
 
-abstract class SymbolBasedClassifier<out T : Element>(element: T,
-                                                      javac: JavacWrapper) : SymbolBasedElement<T>(element, javac), JavaClassifier, JavaAnnotationOwner {
+abstract class SymbolBasedClassifier<out T : Element>(
+        element: T,
+        javac: JavacWrapper
+) : SymbolBasedElement<T>(element, javac), JavaClassifier, JavaAnnotationOwner {
 
     override val annotations: Collection<JavaAnnotation>
-        get() = element.annotationMirrors
-                .map { SymbolBasedAnnotation(it, javac) }
+        get() = element.annotationMirrors.map { SymbolBasedAnnotation(it, javac) }
 
     override fun findAnnotation(fqName: FqName) = element.findAnnotation(fqName, javac)
 

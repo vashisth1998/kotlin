@@ -26,10 +26,12 @@ import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter
 import org.jetbrains.kotlin.load.java.structure.JavaValueParameter
 import org.jetbrains.kotlin.name.Name
 
-class TreeBasedConstructor(tree: JCTree.JCMethodDecl,
-                           treePath: TreePath,
-                           containingClass: JavaClass,
-                           javac: JavacWrapper) : TreeBasedMember<JCTree.JCMethodDecl>(tree, treePath, containingClass, javac), JavaConstructor {
+class TreeBasedConstructor(
+        tree: JCTree.JCMethodDecl,
+        treePath: TreePath,
+        containingClass: JavaClass,
+        javac: JavacWrapper
+) : TreeBasedMember<JCTree.JCMethodDecl>(tree, treePath, containingClass, javac), JavaConstructor {
 
     override val name: Name
         get() = Name.identifier(tree.name.toString())
@@ -50,7 +52,6 @@ class TreeBasedConstructor(tree: JCTree.JCMethodDecl,
         get() = tree.typeParameters.map { TreeBasedTypeParameter(it, TreePath(treePath, it), javac) }
 
     override val valueParameters: List<JavaValueParameter>
-        get() = tree.parameters
-                .map { TreeBasedValueParameter(it, TreePath(treePath, it), javac) }
+        get() = tree.parameters.map { TreeBasedValueParameter(it, TreePath(treePath, it), javac) }
 
 }

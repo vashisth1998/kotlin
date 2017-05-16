@@ -27,9 +27,11 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.jvm.JvmPrimitiveType
 import javax.lang.model.type.TypeKind
 
-abstract class TreeBasedType<out T : JCTree>(val tree: T,
-                                             val treePath: TreePath,
-                                             val javac: JavacWrapper) : JavaType, JavaAnnotationOwner {
+abstract class TreeBasedType<out T : JCTree>(
+        val tree: T,
+        val treePath: TreePath,
+        val javac: JavacWrapper
+) : JavaType, JavaAnnotationOwner {
 
     companion object {
         fun <Type : JCTree> create(tree: Type, treePath: TreePath, javac: JavacWrapper) = when (tree) {
@@ -58,27 +60,37 @@ abstract class TreeBasedType<out T : JCTree>(val tree: T,
 
 }
 
-class TreeBasedPrimitiveType(tree: JCTree.JCPrimitiveTypeTree,
-                             treePath: TreePath,
-                             javac: JavacWrapper) : TreeBasedType<JCTree.JCPrimitiveTypeTree>(tree, treePath, javac), JavaPrimitiveType {
+class TreeBasedPrimitiveType(
+        tree: JCTree.JCPrimitiveTypeTree,
+        treePath: TreePath,
+        javac: JavacWrapper
+) : TreeBasedType<JCTree.JCPrimitiveTypeTree>(tree, treePath, javac), JavaPrimitiveType {
 
     override val type: PrimitiveType?
-        get() = if (tree.primitiveTypeKind == TypeKind.VOID) null else JvmPrimitiveType.get(tree.toString()).primitiveType
+        get() = if (tree.primitiveTypeKind == TypeKind.VOID) {
+            null
+        } else {
+            JvmPrimitiveType.get(tree.toString()).primitiveType
+        }
 
 }
 
-class TreeBasedArrayType(tree: JCTree.JCArrayTypeTree,
-                         treePath: TreePath,
-                         javac: JavacWrapper) : TreeBasedType<JCTree.JCArrayTypeTree>(tree, treePath, javac), JavaArrayType {
+class TreeBasedArrayType(
+        tree: JCTree.JCArrayTypeTree,
+        treePath: TreePath,
+        javac: JavacWrapper
+) : TreeBasedType<JCTree.JCArrayTypeTree>(tree, treePath, javac), JavaArrayType {
 
     override val componentType: JavaType
         get() = create(tree.elemtype, treePath, javac)
 
 }
 
-class TreeBasedWildcardType(tree: JCTree.JCWildcard,
-                            treePath: TreePath,
-                            javac: JavacWrapper) : TreeBasedType<JCTree.JCWildcard>(tree, treePath, javac), JavaWildcardType {
+class TreeBasedWildcardType(
+        tree: JCTree.JCWildcard,
+        treePath: TreePath,
+        javac: JavacWrapper
+) : TreeBasedType<JCTree.JCWildcard>(tree, treePath, javac), JavaWildcardType {
 
     override val bound: JavaType?
         get() = tree.bound?.let { create(it, treePath, javac) }
@@ -88,9 +100,11 @@ class TreeBasedWildcardType(tree: JCTree.JCWildcard,
 
 }
 
-sealed class TreeBasedClassifierType<out T : JCTree>(tree: T,
-                                                     treePath: TreePath,
-                                                     javac: JavacWrapper) : TreeBasedType<T>(tree, treePath, javac), JavaClassifierType {
+sealed class TreeBasedClassifierType<out T : JCTree>(
+        tree: T,
+        treePath: TreePath,
+        javac: JavacWrapper
+) : TreeBasedType<T>(tree, treePath, javac), JavaClassifierType {
 
     override val classifier: JavaClassifier?
         get() = javac.resolve(treePath)
@@ -102,8 +116,7 @@ sealed class TreeBasedClassifierType<out T : JCTree>(tree: T,
         get() = classifierQualifiedName
 
     private val typeParameter: JCTree.JCTypeParameter?
-        get() = treePath
-                .flatMap {
+        get() = treePath.flatMap {
                     when (it) {
                         is JCTree.JCClassDecl -> it.typarams
                         is JCTree.JCMethodDecl -> it.typarams
@@ -114,9 +127,11 @@ sealed class TreeBasedClassifierType<out T : JCTree>(tree: T,
 
 }
 
-class TreeBasedNonGenericClassifierType(tree: JCTree.JCExpression,
-                                        treePath: TreePath,
-                                        javac: JavacWrapper) : TreeBasedClassifierType<JCTree.JCExpression>(tree, treePath, javac) {
+class TreeBasedNonGenericClassifierType(
+        tree: JCTree.JCExpression,
+        treePath: TreePath,
+        javac: JavacWrapper
+) : TreeBasedClassifierType<JCTree.JCExpression>(tree, treePath, javac) {
 
     override val typeArguments: List<JavaType>
         get() = emptyList()
@@ -128,9 +143,11 @@ class TreeBasedNonGenericClassifierType(tree: JCTree.JCExpression,
 
 }
 
-class TreeBasedGenericClassifierType(tree: JCTree.JCTypeApply,
-                                     treePath: TreePath,
-                                     javac: JavacWrapper) : TreeBasedClassifierType<JCTree.JCTypeApply>(tree, treePath, javac) {
+class TreeBasedGenericClassifierType(
+        tree: JCTree.JCTypeApply,
+        treePath: TreePath,
+        javac: JavacWrapper
+) : TreeBasedClassifierType<JCTree.JCTypeApply>(tree, treePath, javac) {
 
     override val typeArguments: List<JavaType>
         get() = tree.arguments.map { create(it, treePath, javac) }

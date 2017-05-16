@@ -24,8 +24,10 @@ import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.DeclaredType
 
-class SymbolBasedField(element: VariableElement,
-                       javac: JavacWrapper) : SymbolBasedMember<VariableElement>(element, javac), JavaField {
+class SymbolBasedField(
+        element: VariableElement,
+        javac: JavacWrapper
+) : SymbolBasedMember<VariableElement>(element, javac), JavaField {
 
     override val isEnumEntry: Boolean
         get() = element.kind == ElementKind.ENUM_CONSTANT
@@ -37,9 +39,9 @@ class SymbolBasedField(element: VariableElement,
         get() = element.constantValue
 
     override val hasConstantNotNullInitializer: Boolean
-        get() = element.constantValue?.let {
-            element.asType().kind.isPrimitive ||
-            ((element.asType() as? DeclaredType)?.asElement() as? TypeElement)?.qualifiedName?.toString() == "java.lang.String"
-        } ?: false
+        get() = element.constantValue != null && element.asType().let {
+            it.kind.isPrimitive ||
+            ((it as? DeclaredType)?.asElement() as? TypeElement)?.qualifiedName?.toString() == "java.lang.String"
+        }
 
 }

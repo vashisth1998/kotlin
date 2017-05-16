@@ -26,13 +26,18 @@ import org.jetbrains.kotlin.load.java.structure.JavaValueParameter
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
-class TreeBasedValueParameter(tree: JCTree.JCVariableDecl,
-                              treePath: TreePath,
-                              javac: JavacWrapper) : TreeBasedElement<JCTree.JCVariableDecl>(tree, treePath, javac), JavaValueParameter {
+class TreeBasedValueParameter(
+        tree: JCTree.JCVariableDecl,
+        treePath: TreePath,
+        javac: JavacWrapper
+) : TreeBasedElement<JCTree.JCVariableDecl>(tree, treePath, javac), JavaValueParameter {
 
-    override val annotations: Collection<JavaAnnotation> by lazy { tree.annotations().map { TreeBasedAnnotation(it, treePath, javac) } }
+    override val annotations: Collection<JavaAnnotation> by lazy {
+        tree.annotations().map { TreeBasedAnnotation(it, treePath, javac) }
+    }
 
-    override fun findAnnotation(fqName: FqName) = annotations.find { it.classId?.asSingleFqName() == fqName }
+    override fun findAnnotation(fqName: FqName) =
+            annotations.find { it.classId?.asSingleFqName() == fqName }
 
     override val isDeprecatedInJavaDoc: Boolean
         get() = false

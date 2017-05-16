@@ -26,8 +26,10 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import javax.lang.model.element.Element
 
-abstract class SymbolBasedMember<out T : Element>(element: T,
-                                                  javac: JavacWrapper) : SymbolBasedElement<T>(element, javac), JavaMember {
+abstract class SymbolBasedMember<out T : Element>(
+        element: T,
+        javac: JavacWrapper
+) : SymbolBasedElement<T>(element, javac), JavaMember {
 
     override val containingClass: JavaClass
         get() = with(element.enclosingElement as Symbol.ClassSymbol) {
@@ -35,8 +37,7 @@ abstract class SymbolBasedMember<out T : Element>(element: T,
         }
 
     override val annotations: Collection<JavaAnnotation>
-        get() = element.annotationMirrors
-                .map { SymbolBasedAnnotation(it, javac) }
+        get() = element.annotationMirrors.map { SymbolBasedAnnotation(it, javac) }
 
     override fun findAnnotation(fqName: FqName) = element.findAnnotation(fqName, javac)
 

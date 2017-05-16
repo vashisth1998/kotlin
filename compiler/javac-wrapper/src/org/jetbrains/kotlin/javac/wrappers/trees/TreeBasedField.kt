@@ -27,10 +27,12 @@ import org.jetbrains.kotlin.load.java.structure.JavaField
 import org.jetbrains.kotlin.load.java.structure.JavaType
 import org.jetbrains.kotlin.name.Name
 
-class TreeBasedField(tree: JCTree.JCVariableDecl,
-                     treePath: TreePath,
-                     containingClass: JavaClass,
-                     javac: JavacWrapper) : TreeBasedMember<JCTree.JCVariableDecl>(tree, treePath, containingClass, javac), JavaField {
+class TreeBasedField(
+        tree: JCTree.JCVariableDecl,
+        treePath: TreePath,
+        containingClass: JavaClass,
+        javac: JavacWrapper
+) : TreeBasedMember<JCTree.JCVariableDecl>(tree, treePath, containingClass, javac), JavaField {
 
     override val name: Name
         get() = Name.identifier(tree.name.toString())
@@ -54,10 +56,12 @@ class TreeBasedField(tree: JCTree.JCVariableDecl,
         get() = TreeBasedType.create(tree.getType(), treePath, javac)
 
     override val initializerValue: Any?
-        get() = tree.init?.let {
-            if (hasConstantNotNullInitializer && it is JCTree.JCLiteral) {
-                it.value
-            } else null
+        get() = tree.init?.let { initExpr ->
+            if (hasConstantNotNullInitializer && initExpr is JCTree.JCLiteral) {
+                initExpr.value
+            } else {
+                null
+            }
         }
 
     override val hasConstantNotNullInitializer: Boolean

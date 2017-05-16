@@ -35,7 +35,8 @@ object JavacWrapperRegistrar {
             Class.forName(JAVAC_CONTEXT_CLASS)
         } catch (e: ClassNotFoundException) {
             environment.configuration[CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY]
-                    ?.report(CompilerMessageSeverity.STRONG_WARNING, "'$JAVAC_CONTEXT_CLASS' class can't be found ('tools.jar' is not found). ")
+                    ?.report(CompilerMessageSeverity.STRONG_WARNING,
+                             "'$JAVAC_CONTEXT_CLASS' class can't be found ('tools.jar' is not found). ")
             return false
         }
 

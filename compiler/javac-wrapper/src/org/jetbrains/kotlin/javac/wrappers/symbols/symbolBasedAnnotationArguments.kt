@@ -24,8 +24,10 @@ import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.TypeMirror
 
-sealed class SymbolBasedAnnotationArgument(override val name: Name,
-                                           val javac: JavacWrapper) : JavaAnnotationArgument, JavaElement {
+sealed class SymbolBasedAnnotationArgument(
+        override val name: Name,
+        val javac: JavacWrapper
+) : JavaAnnotationArgument, JavaElement {
 
     companion object {
         fun create(value: Any, name: Name, javac: JavacWrapper): JavaAnnotationArgument = when (value) {
@@ -37,44 +39,55 @@ sealed class SymbolBasedAnnotationArgument(override val name: Name,
             else -> SymbolBasedLiteralAnnotationArgument(value, name, javac)
         }
 
-        private fun arrayAnnotationArguments(values: Collection<*>, name: Name, javac: JavacWrapper): JavaArrayAnnotationArgument = values
-                .map { if (it is Collection<*>) arrayAnnotationArguments(it, name, javac) else create(it!!, name, javac) }
-                .let { SymbolBasedArrayAnnotationArgument(it, name, javac) }
+        private fun arrayAnnotationArguments(values: Collection<*>, name: Name, javac: JavacWrapper): JavaArrayAnnotationArgument =
+                values.map { if (it is Collection<*>) arrayAnnotationArguments(it, name, javac) else create(it!!, name, javac) }
+                .let { argumentList -> SymbolBasedArrayAnnotationArgument(argumentList, name, javac) }
 
     }
 
 }
 
-class SymbolBasedAnnotationAsAnnotationArgument(val mirror: AnnotationMirror,
-                                                name: Name,
-                                                javac: JavacWrapper) : SymbolBasedAnnotationArgument(name, javac), JavaAnnotationAsAnnotationArgument {
+class SymbolBasedAnnotationAsAnnotationArgument(
+        val mirror: AnnotationMirror,
+        name: Name,
+        javac: JavacWrapper
+) : SymbolBasedAnnotationArgument(name, javac), JavaAnnotationAsAnnotationArgument {
 
     override fun getAnnotation() = SymbolBasedAnnotation(mirror, javac)
 
 }
 
-class SymbolBasedReferenceAnnotationArgument(val element: VariableElement,
-                                             javac: JavacWrapper) : SymbolBasedAnnotationArgument(Name.identifier(element.simpleName.toString()), javac),
-        JavaEnumValueAnnotationArgument {
+class SymbolBasedReferenceAnnotationArgument(
+        val element: VariableElement,
+        javac: JavacWrapper
+) : SymbolBasedAnnotationArgument(Name.identifier(element.simpleName.toString()), javac), JavaEnumValueAnnotationArgument {
 
     override fun resolve() = SymbolBasedField(element, javac)
 
 }
 
-class SymbolBasedClassObjectAnnotationArgument(val type: TypeMirror,
-                                               name : Name,
-                                               javac: JavacWrapper) : SymbolBasedAnnotationArgument(name, javac), JavaClassObjectAnnotationArgument {
+class SymbolBasedClassObjectAnnotationArgument(
+        val type: TypeMirror,
+        name : Name,
+        javac: JavacWrapper
+) : SymbolBasedAnnotationArgument(name, javac), JavaClassObjectAnnotationArgument {
 
     override fun getReferencedType() = SymbolBasedType.create(type, javac)
 
 }
 
-class SymbolBasedArrayAnnotationArgument(val args : List<JavaAnnotationArgument>,
-                                         name : Name,
-                                         javac: JavacWrapper) : SymbolBasedAnnotationArgument(name, javac), JavaArrayAnnotationArgument {
+class SymbolBasedArrayAnnotationArgument(
+        val args : List<JavaAnnotationArgument>,
+        name : Name,
+        javac: JavacWrapper
+) : SymbolBasedAnnotationArgument(name, javac), JavaArrayAnnotationArgument {
+
     override fun getElements() = args
+
 }
 
-class SymbolBasedLiteralAnnotationArgument(override val value : Any,
-                                           name : Name,
-                                           javac: JavacWrapper) : SymbolBasedAnnotationArgument(name, javac), JavaLiteralAnnotationArgument
+class SymbolBasedLiteralAnnotationArgument(
+        override val value : Any,
+        name : Name,
+        javac: JavacWrapper
+) : SymbolBasedAnnotationArgument(name, javac), JavaLiteralAnnotationArgument

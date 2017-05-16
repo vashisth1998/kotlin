@@ -33,9 +33,11 @@ import javax.lang.model.type.NoType
 import javax.lang.model.type.TypeKind
 import javax.tools.JavaFileObject
 
-class SymbolBasedClass(element: TypeElement,
-                       javac: JavacWrapper,
-                       val file: JavaFileObject?) : SymbolBasedClassifier<TypeElement>(element, javac), VirtualFileBoundJavaClass {
+class SymbolBasedClass(
+        element: TypeElement,
+        javac: JavacWrapper,
+        val file: JavaFileObject?
+) : SymbolBasedClassifier<TypeElement>(element, javac), VirtualFileBoundJavaClass {
 
     override val name: Name
         get() = Name.identifier(element.simpleName.toString())

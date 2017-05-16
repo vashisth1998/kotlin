@@ -24,16 +24,18 @@ import org.jetbrains.kotlin.javac.JavacWrapper
 import org.jetbrains.kotlin.load.java.structure.*
 import org.jetbrains.kotlin.name.Name
 
-class TreeBasedMethod(tree: JCTree.JCMethodDecl,
-                      treePath: TreePath,
-                      containingClass: JavaClass,
-                      javac: JavacWrapper) : TreeBasedMember<JCTree.JCMethodDecl>(tree, treePath, containingClass, javac), JavaMethod {
+class TreeBasedMethod(
+        tree: JCTree.JCMethodDecl,
+        treePath: TreePath,
+        containingClass: JavaClass,
+        javac: JavacWrapper
+) : TreeBasedMember<JCTree.JCMethodDecl>(tree, treePath, containingClass, javac), JavaMethod {
 
     override val name: Name
         get() = Name.identifier(tree.name.toString())
 
     override val isAbstract: Boolean
-        get() = if (containingClass.isInterface && !tree.modifiers.hasDefaultModifier) true else tree.modifiers.isAbstract
+        get() = (containingClass.isInterface && !tree.modifiers.hasDefaultModifier) || tree.modifiers.isAbstract
 
     override val isStatic: Boolean
         get() = tree.modifiers.isStatic
@@ -48,8 +50,7 @@ class TreeBasedMethod(tree: JCTree.JCMethodDecl,
         get() = tree.typeParameters.map { TreeBasedTypeParameter(it, TreePath(treePath, it), javac) }
 
     override val valueParameters: List<JavaValueParameter>
-        get() = tree.parameters
-                .map { TreeBasedValueParameter(it, TreePath(treePath, it), javac) }
+        get() = tree.parameters.map { TreeBasedValueParameter(it, TreePath(treePath, it), javac) }
 
     override val returnType: JavaType
         get() = TreeBasedType.create(tree.returnType, treePath, javac)

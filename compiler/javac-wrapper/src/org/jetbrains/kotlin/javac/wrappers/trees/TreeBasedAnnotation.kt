@@ -26,18 +26,20 @@ import org.jetbrains.kotlin.load.java.structure.JavaElement
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 
-class TreeBasedAnnotation(val annotation: JCTree.JCAnnotation,
-                          val treePath: TreePath,
-                          val javac: JavacWrapper) : JavaElement, JavaAnnotation {
+class TreeBasedAnnotation(
+        val annotation: JCTree.JCAnnotation,
+        val treePath: TreePath,
+        val javac: JavacWrapper
+) : JavaElement, JavaAnnotation {
 
     override val arguments: Collection<JavaAnnotationArgument>
-        get() = annotation.arguments
-                .map { TreeBasedAnnotationArgument(Name.identifier(it.toString())) }
+        get() = annotation.arguments.map { TreeBasedAnnotationArgument(Name.identifier(it.toString())) }
 
     override val classId: ClassId?
         get() = resolve()?.computeClassId()
 
-    override fun resolve() = javac.resolve(TreePath.getPath(treePath.compilationUnit, annotation.annotationType)) as? JavaClass
+    override fun resolve() =
+            javac.resolve(TreePath.getPath(treePath.compilationUnit, annotation.annotationType)) as? JavaClass
 
 }
 

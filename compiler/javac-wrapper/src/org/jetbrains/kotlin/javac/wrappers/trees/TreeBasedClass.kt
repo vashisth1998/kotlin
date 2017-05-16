@@ -32,17 +32,22 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import javax.tools.JavaFileObject
 
-class TreeBasedClass(tree: JCTree.JCClassDecl,
-                     treePath: TreePath,
-                     javac: JavacWrapper,
-                     val file: JavaFileObject) : TreeBasedElement<JCTree.JCClassDecl>(tree, treePath, javac), VirtualFileBoundJavaClass {
+class TreeBasedClass(
+        tree: JCTree.JCClassDecl,
+        treePath: TreePath,
+        javac: JavacWrapper,
+        val file: JavaFileObject
+) : TreeBasedElement<JCTree.JCClassDecl>(tree, treePath, javac), VirtualFileBoundJavaClass {
 
     override val name: Name
         get() = Name.identifier(tree.simpleName.toString())
 
-    override val annotations: Collection<JavaAnnotation> by lazy { tree.annotations().map { TreeBasedAnnotation(it, treePath, javac) } }
+    override val annotations: Collection<JavaAnnotation> by lazy {
+        tree.annotations().map { annotation -> TreeBasedAnnotation(annotation, treePath, javac) }
+    }
 
-    override fun findAnnotation(fqName: FqName) = annotations.find { it.classId?.asSingleFqName() == fqName }
+    override fun findAnnotation(fqName: FqName) =
+            annotations.find { it.classId?.asSingleFqName() == fqName }
 
     override val isDeprecatedInJavaDoc: Boolean
         get() = false
@@ -60,14 +65,19 @@ class TreeBasedClass(tree: JCTree.JCClassDecl,
         get() = if (outerClass?.isInterface ?: false) PUBLIC else tree.modifiers.visibility
 
     override val typeParameters: List<JavaTypeParameter>
-        get() = tree.typeParameters.map { TreeBasedTypeParameter(it, TreePath(treePath, it), javac) }
+        get() = tree.typeParameters.map { parameter ->
+            TreeBasedTypeParameter(parameter, TreePath(treePath, parameter), javac)
+        }
 
-    override val fqName: FqName = treePath.reversed()
-            .filterIsInstance<JCTree.JCClassDecl>()
-            .joinToString(separator = ".",
-                          prefix = "${treePath.compilationUnit.packageName}.",
-                          transform = JCTree.JCClassDecl::name)
-            .let(::FqName)
+    override val fqName: FqName =
+            treePath.reversed()
+                    .filterIsInstance<JCTree.JCClassDecl>()
+                    .joinToString(
+                            separator = ".",
+                            prefix = "${treePath.compilationUnit.packageName}.",
+                            transform = JCTree.JCClassDecl::name
+                    )
+                    .let(::FqName)
 
     override val supertypes: Collection<JavaClassifierType>
         get() = arrayListOf<JavaClassifierType>().apply {
@@ -99,7 +109,9 @@ class TreeBasedClass(tree: JCTree.JCClassDecl,
     }
 
     override val outerClass: JavaClass? by lazy {
-        (treePath.parentPath.leaf as? JCTree.JCClassDecl)?.let { TreeBasedClass(it, treePath.parentPath, javac, file) }
+        (treePath.parentPath.leaf as? JCTree.JCClassDecl)?.let { classDecl ->
+            TreeBasedClass(classDecl, treePath.parentPath, javac, file)
+        }
     }
 
     override val isInterface: Boolean
@@ -126,8 +138,10 @@ class TreeBasedClass(tree: JCTree.JCClassDecl,
 
     override val constructors: Collection<JavaConstructor>
         get() = tree.members
-                .filter { TreeInfo.isConstructor(it) }
-                .map { TreeBasedConstructor(it as JCTree.JCMethodDecl, TreePath(treePath, it), this, javac) }
+                .filter { member -> TreeInfo.isConstructor(member) }
+                .map { constructor ->
+                    TreeBasedConstructor(constructor as JCTree.JCMethodDecl, TreePath(treePath, constructor), this, javac)
+                }
 
     override val innerClassNames: Collection<Name>
         get() = innerClasses.keys

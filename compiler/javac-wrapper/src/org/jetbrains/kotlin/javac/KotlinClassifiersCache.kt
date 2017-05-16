@@ -36,9 +36,9 @@ import org.jetbrains.kotlin.load.java.structure.impl.VirtualFileBoundJavaClass
 class KotlinClassifiersCache(sourceFiles: Collection<KtFile>,
                              private val javac: JavacWrapper) {
 
-    private val kotlinClasses: Map<FqName?, KtClassOrObject?> = sourceFiles.flatMap {
-        (it.collectDescendantsOfType<KtClassOrObject>()
-                .map { it.fqName to it } + (it.javaFileFacadeFqName to null))
+    private val kotlinClasses: Map<FqName?, KtClassOrObject?> = sourceFiles.flatMap { ktFile ->
+        ktFile.collectDescendantsOfType<KtClassOrObject>().map { it.fqName to it } +
+        (ktFile.javaFileFacadeFqName to null)
     }.toMap()
 
     private val classifiers = hashMapOf<FqName, JavaClass>()
@@ -80,8 +80,8 @@ class MockKotlinClassifier(override val fqName: FqName,
 
     override val supertypes: Collection<JavaClassifierType>
         get() = classOrObject.superTypeListEntries
-                .mapNotNull {
-                    val userType = it.typeAsUserType
+                .mapNotNull { superTypeListEntry ->
+                    val userType = superTypeListEntry.typeAsUserType
                     arrayListOf<String>().apply {
                         userType?.referencedName?.let { add(it) }
                         var qualifier = userType?.qualifier
@@ -89,16 +89,18 @@ class MockKotlinClassifier(override val fqName: FqName,
                             qualifier.referencedName?.let { add(it) }
                             qualifier = qualifier.qualifier
                         }
-                    }
-                            .reversed()
-                            .joinToString(separator = ".") { it }
+                    }.reversed().joinToString(separator = ".") { it }
                 }
                 .mapNotNull { resolveSupertype(it, classOrObject, javac) }
                 .map { MockKotlinClassifierType(it) }
 
     val innerClasses: Collection<JavaClass>
         get() = classOrObject.declarations.filterIsInstance<KtClassOrObject>()
-                .mapNotNull { it.fqName?.let { javac.getKotlinClassifier(it) } }
+                .mapNotNull { nestedClassOrObject ->
+                    nestedClassOrObject.fqName?.let {
+                        javac.getKotlinClassifier(it)
+                    }
+                }
 
     override val outerClass: JavaClass?
         get() = throw UnsupportedOperationException("Should not be called")
@@ -138,12 +140,14 @@ class MockKotlinClassifier(override val fqName: FqName,
 
     override fun isFromSourceCodeInScope(scope: SearchScope) = true
 
-    override fun findAnnotation(fqName: FqName) = throw UnsupportedOperationException("Should not be called")
+    override fun findAnnotation(fqName: FqName) =
+            throw UnsupportedOperationException("Should not be called")
 
     override val innerClassNames
         get() = innerClasses.map(JavaClass::name)
 
-    override fun findInnerClass(name: Name) = innerClasses.find { it.name == name }
+    override fun findInnerClass(name: Name) =
+            innerClasses.find { it.name == name }
 
 }
 
@@ -164,7 +168,8 @@ class MockKotlinClassifierType(override val classifier: JavaClassifier) : JavaCl
     override val presentableText: String
         get() = throw UnsupportedOperationException("Should not be called")
 
-    override fun findAnnotation(fqName: FqName) = throw UnsupportedOperationException("Should not be called")
+    override fun findAnnotation(fqName: FqName) =
+            throw UnsupportedOperationException("Should not be called")
 
     override val isDeprecatedInJavaDoc: Boolean
         get() = throw UnsupportedOperationException("Should not be called")
@@ -190,17 +195,22 @@ private fun resolveSupertype(name: String,
 private fun tryToResolveInner(name: String,
                               classOrObject: KtClassOrObject,
                               javac: JavacWrapper,
-                              nameParts: List<String>) = classOrObject.containingClassOrObject
-        ?.let { it.fqName?.let { javac.findClass(it) ?: javac.getKotlinClassifier(it) } }
-        ?.findInner(name, javac, nameParts)
+                              nameParts: List<String>) =
+        classOrObject.containingClassOrObject?.let { containingClass ->
+            containingClass.fqName?.let {
+                javac.findClass(it) ?: javac.getKotlinClassifier(it)
+            }
+        }?.findInner(name, javac, nameParts)
 
 private fun KtFile.tryToResolvePackageClass(name: String,
                                      javac: JavacWrapper,
                                      nameParts: List<String> = emptyList()): JavaClass? {
     if (nameParts.size > 1) {
         return find(FqName("${packageFqName.asString()}.${nameParts.first()}"), javac, nameParts)
-    } else return (javac.findClass(FqName("${packageFqName.asString()}.$name")) ?: javac.getKotlinClassifier(FqName("${packageFqName.asString()}.$name")))
-            ?.let { return it }
+    } else {
+        return javac.findClass(FqName("${packageFqName.asString()}.$name"))
+               ?: javac.getKotlinClassifier(FqName("${packageFqName.asString()}.$name"))
+    }
 }
 
 private fun KtFile.tryToResolveSingleTypeImport(name: String,
@@ -208,15 +218,23 @@ private fun KtFile.tryToResolveSingleTypeImport(name: String,
                                                 nameParts: List<String> = emptyList()): JavaClass? {
     if (nameParts.size > 1) {
         val foundImports = importDirectives.filter { it.text.endsWith(".${nameParts.first()}") }
-        foundImports.forEach {
-            it.importedFqName?.let { find(it, javac, nameParts)?.let { return it } }
+        foundImports.forEach { importDirective ->
+            importDirective.importedFqName?.let { importedFqName ->
+                find(importedFqName, javac, nameParts)?.let { importedClass ->
+                    return importedClass
+                }
+            }
         }
         return null
-    } else return importDirectives
-            .find { it.text.endsWith(".$name") }
-            ?.let {
-                it.importedFqName?.let { javac.findClass(it) ?: javac.getKotlinClassifier(it) }
+    } else {
+        return importDirectives.find { importDirective ->
+            importDirective.text.endsWith(".$name")
+        }?.let { importDirective ->
+            importDirective.importedFqName?.let { fqName ->
+                javac.findClass(fqName) ?: javac.getKotlinClassifier(fqName)
             }
+        }
+    }
 }
 
 private fun KtFile.tryToResolveTypeImportOnDemand(name: String,
@@ -225,17 +243,17 @@ private fun KtFile.tryToResolveTypeImportOnDemand(name: String,
     val packagesWithAsterisk = importDirectives.filter { it.text.endsWith("*") }
 
     if (nameParts.size > 1) {
-        packagesWithAsterisk.forEach { pack ->
-            find(FqName("${pack.importedFqName?.asString()}.${nameParts.first()}"), javac, nameParts)
-                    ?.let { return it }
+        packagesWithAsterisk.forEach { importDirective ->
+            find(FqName("${importDirective.importedFqName?.asString()}.${nameParts.first()}"),
+                 javac,
+                 nameParts)?.let { return it }
         }
         return null
     } else {
-        packagesWithAsterisk
-                .forEach {
-                    val fqName = "${it.importedFqName?.asString()}.$name".let(::FqName)
-                    javac.findClass(fqName)?.let { return it } ?: javac.getKotlinClassifier(fqName)?.let { return it }
-                }
+        packagesWithAsterisk.forEach { importDirective ->
+            val fqName = "${importDirective.importedFqName?.asString()}.$name".let(::FqName)
+            javac.findClass(fqName)?.let { return it } ?: javac.getKotlinClassifier(fqName)?.let { return it }
+        }
 
         return null
     }

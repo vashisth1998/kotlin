@@ -59,12 +59,16 @@ internal fun TypeElement.computeClassId(): ClassId? {
     return ClassId.topLevel(FqName(qualifiedName.toString()))
 }
 
-internal fun ExecutableElement.valueParameters(javac: JavacWrapper): List<JavaValueParameter> = parameters
-        .mapIndexed { index, it ->
-            SymbolBasedValueParameter(it, it.simpleName.toString(), index == parameters.lastIndex && isVarArgs, javac)
+internal fun ExecutableElement.valueParameters(javac: JavacWrapper): List<JavaValueParameter> =
+        parameters.mapIndexed { index, parameter ->
+            SymbolBasedValueParameter(parameter,
+                                      parameter.simpleName.toString(),
+                                      index == parameters.lastIndex && isVarArgs,
+                                      javac)
         }
 
 internal fun AnnotatedConstruct.findAnnotation(fqName: FqName,
-                                               javac: JavacWrapper) = annotationMirrors
-        .find { (it.annotationType.asElement() as TypeElement).qualifiedName.toString() == fqName.asString() }
-        ?.let { SymbolBasedAnnotation(it, javac) }
+                                               javac: JavacWrapper) =
+        annotationMirrors.find {
+            (it.annotationType.asElement() as TypeElement).qualifiedName.toString() == fqName.asString()
+        }?.let { SymbolBasedAnnotation(it, javac) }

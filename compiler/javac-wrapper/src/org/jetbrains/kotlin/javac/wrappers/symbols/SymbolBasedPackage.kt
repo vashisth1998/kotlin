@@ -22,7 +22,10 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import javax.lang.model.element.PackageElement
 
-class SymbolBasedPackage(element: PackageElement, javac: JavacWrapper) : SymbolBasedElement<PackageElement>(element, javac), JavaPackage {
+class SymbolBasedPackage(
+        element: PackageElement,
+        javac: JavacWrapper
+) : SymbolBasedElement<PackageElement>(element, javac), JavaPackage {
 
     override val fqName: FqName
         get() = FqName(element.qualifiedName.toString())
@@ -30,8 +33,8 @@ class SymbolBasedPackage(element: PackageElement, javac: JavacWrapper) : SymbolB
     override val subPackages: Collection<JavaPackage>
         get() = javac.findSubPackages(FqName(element.qualifiedName.toString()))
 
-    override fun getClasses(nameFilter: (Name) -> Boolean) = javac.findClassesFromPackage(fqName)
-            .filter { nameFilter(it.name) }
+    override fun getClasses(nameFilter: (Name) -> Boolean) =
+            javac.findClassesFromPackage(fqName).filter { nameFilter(it.name) }
 
     override fun toString() = element.qualifiedName.toString()
 

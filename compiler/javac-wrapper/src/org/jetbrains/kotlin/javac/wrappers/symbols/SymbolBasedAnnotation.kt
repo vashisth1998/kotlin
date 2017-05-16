@@ -26,8 +26,10 @@ import org.jetbrains.kotlin.name.Name
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.TypeElement
 
-open class SymbolBasedAnnotation(val annotationMirror: AnnotationMirror,
-                                 val javac: JavacWrapper) : JavaElement, JavaAnnotation {
+open class SymbolBasedAnnotation(
+        val annotationMirror: AnnotationMirror,
+        val javac: JavacWrapper
+) : JavaElement, JavaAnnotation {
 
     override val arguments: Collection<JavaAnnotationArgument>
         get() = annotationMirror.elementValues.map { (key, value) ->

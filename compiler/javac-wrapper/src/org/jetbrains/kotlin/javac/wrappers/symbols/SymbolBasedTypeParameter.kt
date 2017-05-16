@@ -22,8 +22,10 @@ import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter
 import org.jetbrains.kotlin.name.Name
 import javax.lang.model.element.TypeParameterElement
 
-class SymbolBasedTypeParameter(element: TypeParameterElement,
-                               javac: JavacWrapper) : SymbolBasedClassifier<TypeParameterElement>(element, javac), JavaTypeParameter {
+class SymbolBasedTypeParameter(
+        element: TypeParameterElement,
+        javac: JavacWrapper
+) : SymbolBasedClassifier<TypeParameterElement>(element, javac), JavaTypeParameter {
 
     override val name: Name
         get() = Name.identifier(element.simpleName.toString())

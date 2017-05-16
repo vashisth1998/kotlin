@@ -25,16 +25,21 @@ import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
-class TreeBasedTypeParameter(tree: JCTree.JCTypeParameter,
-                             treePath: TreePath,
-                             javac: JavacWrapper) : TreeBasedElement<JCTree.JCTypeParameter>(tree, treePath, javac), JavaTypeParameter {
+class TreeBasedTypeParameter(
+        tree: JCTree.JCTypeParameter,
+        treePath: TreePath,
+        javac: JavacWrapper
+) : TreeBasedElement<JCTree.JCTypeParameter>(tree, treePath, javac), JavaTypeParameter {
 
     override val name: Name
         get() = Name.identifier(tree.name.toString())
 
-    override val annotations: Collection<JavaAnnotation> by lazy { tree.annotations().map { TreeBasedAnnotation(it, treePath, javac) } }
+    override val annotations: Collection<JavaAnnotation> by lazy {
+        tree.annotations().map { TreeBasedAnnotation(it, treePath, javac) }
+    }
 
-    override fun findAnnotation(fqName: FqName) = annotations.firstOrNull { it.classId?.asSingleFqName() == fqName }
+    override fun findAnnotation(fqName: FqName) =
+            annotations.firstOrNull { it.classId?.asSingleFqName() == fqName }
 
     override val isDeprecatedInJavaDoc: Boolean
         get() = false

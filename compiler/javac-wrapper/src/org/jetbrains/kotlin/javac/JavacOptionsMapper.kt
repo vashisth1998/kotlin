@@ -27,8 +27,8 @@ object JavacOptionsMapper {
 
     private val optionPattern = Pattern.compile("\\s+")
 
-    private fun Options.putOption(option: String) = option
-            .split(optionPattern)
+    private fun Options.putOption(option: String) =
+            option.split(optionPattern)
             .filter { it.isNotEmpty() }
             .let { arg ->
                 when(arg.size) {

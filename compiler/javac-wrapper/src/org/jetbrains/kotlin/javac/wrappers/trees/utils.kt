@@ -42,7 +42,8 @@ internal val JCTree.JCModifiers.visibility: Visibility
             Modifier.PUBLIC in it -> Visibilities.PUBLIC
             Modifier.PRIVATE in it -> Visibilities.PRIVATE
             Modifier.PROTECTED in it -> {
-                if (Modifier.STATIC in it) JavaVisibilities.PROTECTED_STATIC_VISIBILITY else JavaVisibilities.PROTECTED_AND_PACKAGE
+                if (Modifier.STATIC in it) JavaVisibilities.PROTECTED_STATIC_VISIBILITY
+                else JavaVisibilities.PROTECTED_AND_PACKAGE
             }
             else -> JavaVisibilities.PACKAGE_VISIBILITY
         }
@@ -56,4 +57,5 @@ internal fun JCTree.annotations(): Collection<JCTree.JCAnnotation> = when (this)
     else -> null
 } ?: emptyList<JCTree.JCAnnotation>()
 
-fun JavaClass.computeClassId(): ClassId? = outerClass?.computeClassId()?.createNestedClassId(name) ?: fqName?.let { ClassId.topLevel(it) }
+fun JavaClass.computeClassId(): ClassId? =
+        outerClass?.computeClassId()?.createNestedClassId(name) ?: fqName?.let { ClassId.topLevel(it) }

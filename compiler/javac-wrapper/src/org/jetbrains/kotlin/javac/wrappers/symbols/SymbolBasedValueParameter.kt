@@ -24,15 +24,18 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import javax.lang.model.element.VariableElement
 
-class SymbolBasedValueParameter(element: VariableElement,
-                                private val elementName : String,
-                                override val isVararg : Boolean,
-                                javac: JavacWrapper) : SymbolBasedElement<VariableElement>(element, javac), JavaValueParameter {
+class SymbolBasedValueParameter(
+        element: VariableElement,
+        private val elementName : String,
+        override val isVararg : Boolean,
+        javac: JavacWrapper
+) : SymbolBasedElement<VariableElement>(element, javac), JavaValueParameter {
 
     override val annotations: Collection<JavaAnnotation>
         get() = element.annotationMirrors.map { SymbolBasedAnnotation(it, javac) }
 
-    override fun findAnnotation(fqName: FqName) = element.findAnnotation(fqName, javac)
+    override fun findAnnotation(fqName: FqName) =
+            element.findAnnotation(fqName, javac)
 
     override val isDeprecatedInJavaDoc: Boolean
         get() =  javac.isDeprecated(element)
