@@ -492,12 +492,9 @@ public class KotlinTestUtils {
             JvmContentRootsKt.addJvmClasspathRoots(configuration, PathUtil.getJdkClassesRootsFromJre(getJreHome(jdk6)));
         }
         else if (jdkKind == TestJdkKind.FULL_JDK_9) {
-            String jdk9 = System.getenv("JDK_9");
-            if (jdk9 != null) {
-                configuration.put(JVMConfigurationKeys.JDK_HOME, new File(getJreHome(jdk9)));
-            }
-            else {
-                System.err.println("Environment variable JDK_9 is not set, the test will be skipped");
+            File home = getJre9HomeIfPossible();
+            if (home != null) {
+                configuration.put(JVMConfigurationKeys.JDK_HOME, home);
             }
         }
         else {
@@ -520,6 +517,16 @@ public class KotlinTestUtils {
         JvmContentRootsKt.addJvmClasspathRoots(configuration, classpath);
 
         return configuration;
+    }
+
+    @Nullable
+    public static File getJre9HomeIfPossible() {
+        String jdk9 = System.getenv("JDK_9");
+        if (jdk9 == null) {
+            System.err.println("Environment variable JDK_9 is not set, the test will be skipped");
+            return null;
+        }
+        return new File(getJreHome(jdk9));
     }
 
     @NotNull
