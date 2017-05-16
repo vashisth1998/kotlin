@@ -270,7 +270,7 @@ class JavacWrapper(javaFiles: Collection<File>,
                     val fqName = it.name
                             .substringAfter(outDirName)
                             .substringBefore(".class")
-                            .replace("/", ".")
+                            .replace(File.separator, ".")
                             .let { if (it.startsWith(".")) it.substring(1) else it }
                             .let(names::fromString)
 
