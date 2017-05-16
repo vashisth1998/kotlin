@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.javac.MockKotlinClassifier
 import org.jetbrains.kotlin.load.java.structure.*
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.jvm.JvmPrimitiveType
+import javax.lang.model.type.TypeKind
 
 abstract class TreeBasedType<out T : JCTree>(val tree: T,
                                              val treePath: TreePath,
@@ -62,7 +63,7 @@ class TreeBasedPrimitiveType(tree: JCTree.JCPrimitiveTypeTree,
                              javac: JavacWrapper) : TreeBasedType<JCTree.JCPrimitiveTypeTree>(tree, treePath, javac), JavaPrimitiveType {
 
     override val type: PrimitiveType?
-        get() = if ("void" == tree.toString()) null else JvmPrimitiveType.get(tree.toString()).primitiveType
+        get() = if (tree.primitiveTypeKind == TypeKind.VOID) null else JvmPrimitiveType.get(tree.toString()).primitiveType
 
 }
 

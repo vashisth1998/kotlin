@@ -25,7 +25,7 @@ import javax.lang.model.element.VariableElement
 import javax.lang.model.type.TypeMirror
 
 sealed class SymbolBasedAnnotationArgument(override val name: Name,
-                                         val javac: JavacWrapper) : JavaAnnotationArgument, JavaElement {
+                                           val javac: JavacWrapper) : JavaAnnotationArgument, JavaElement {
 
     companion object {
         fun create(value: Any, name: Name, javac: JavacWrapper): JavaAnnotationArgument = when (value) {

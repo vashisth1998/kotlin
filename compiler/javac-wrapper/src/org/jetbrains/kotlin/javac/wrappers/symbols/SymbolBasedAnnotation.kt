@@ -30,8 +30,9 @@ open class SymbolBasedAnnotation(val annotationMirror: AnnotationMirror,
                                  val javac: JavacWrapper) : JavaElement, JavaAnnotation {
 
     override val arguments: Collection<JavaAnnotationArgument>
-        get() = annotationMirror.elementValues
-                .map { (key, value) -> SymbolBasedAnnotationArgument.create(value.value, Name.identifier(key.simpleName.toString()), javac) }
+        get() = annotationMirror.elementValues.map { (key, value) ->
+            SymbolBasedAnnotationArgument.create(value.value, Name.identifier(key.simpleName.toString()), javac)
+        }
 
     override val classId: ClassId?
         get() = (annotationMirror.annotationType.asElement() as? TypeElement)?.computeClassId()

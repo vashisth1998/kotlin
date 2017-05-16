@@ -25,7 +25,7 @@ object JavacOptionsMapper {
         arguments.forEach { options.putOption(it) }
     }
 
-    private val optionPattern by lazy { Pattern.compile("\\s+") }
+    private val optionPattern = Pattern.compile("\\s+")
 
     private fun Options.putOption(option: String) = option
             .split(optionPattern)

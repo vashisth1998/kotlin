@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.javac
 
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.CommonClassNames
 import com.intellij.psi.search.EverythingGlobalScope
 import com.intellij.psi.search.GlobalSearchScope
@@ -54,6 +55,7 @@ import org.jetbrains.kotlin.javac.wrappers.trees.TreeBasedClass
 import org.jetbrains.kotlin.javac.wrappers.trees.TreeBasedPackage
 import org.jetbrains.kotlin.javac.wrappers.trees.TreePathResolverCache
 import org.jetbrains.kotlin.javac.wrappers.trees.computeClassId
+import org.jetbrains.kotlin.load.java.structure.JavaClassifier
 import org.jetbrains.kotlin.load.java.structure.JavaPackage
 import org.jetbrains.kotlin.name.ClassId
 import java.io.Closeable
@@ -134,7 +136,7 @@ class JavacWrapper(javaFiles: Collection<File>,
     private val symbolBasedClassesCache = hashMapOf<String, SymbolBasedClass?>()
     private val symbolBasedPackagesCache = hashMapOf<String, SymbolBasedPackage?>()
 
-    fun compile(outDir: File? = null) = with(javac) {
+    fun compile(outDir: File? = null): Boolean = with(javac) {
         if (errorCount() > 0) return false
 
         fileManager.setClassPathForCompilation(outDir)
@@ -184,42 +186,42 @@ class JavacWrapper(javaFiles: Collection<File>,
         return findPackageInSymbols(fqName.asString())
     }
 
-    fun findSubPackages(fqName: FqName) = symbols.packages
-                                                  .filterKeys { it.toString().startsWith("$fqName.") }
-                                                  .map { SymbolBasedPackage(it.value, this) } +
-                                          javaPackages
-                                                  .filterKeys { it.isSubpackageOf(fqName) && it != fqName }
-                                                  .map { it.value }
+    fun findSubPackages(fqName: FqName): List<JavaPackage> = symbols.packages
+                                                                     .filterKeys { it.toString().startsWith("$fqName.") }
+                                                                     .map { SymbolBasedPackage(it.value, this) } +
+                                                             javaPackages
+                                                                     .filterKeys { it.isSubpackageOf(fqName) && it != fqName }
+                                                                     .map { it.value }
 
-    fun findClassesFromPackage(fqName: FqName) = javaClasses
-                                                         .filterKeys { it?.parentOrNull() == fqName }
-                                                         .flatMap { it.value.withInnerClasses() } +
-                                                 elements.getPackageElement(fqName.asString())
-                                                         ?.members()
-                                                         ?.elements
-                                                         ?.filterIsInstance(Symbol.ClassSymbol::class.java)
-                                                         ?.map { SymbolBasedClass(it, this, it.classfile) }
-                                                         .orEmpty()
+    fun findClassesFromPackage(fqName: FqName): List<JavaClass> = javaClasses
+                                                                          .filterKeys { it?.parentOrNull() == fqName }
+                                                                          .flatMap { it.value.withInnerClasses() } +
+                                                                  elements.getPackageElement(fqName.asString())
+                                                                          ?.members()
+                                                                          ?.elements
+                                                                          ?.filterIsInstance(Symbol.ClassSymbol::class.java)
+                                                                          ?.map { SymbolBasedClass(it, this, it.classfile) }
+                                                                          .orEmpty()
 
-    fun knownClassNamesInPackage(fqName: FqName) = javaClasses.filterKeys { it?.parentOrNull() == fqName }
-                                                           .mapTo(hashSetOf()) { it.value.name.asString() } +
-                                                   elements.getPackageElement(fqName.asString())
-                                                           ?.members_field
-                                                           ?.elements
-                                                           ?.filterIsInstance<Symbol.ClassSymbol>()
-                                                           ?.map { it.name.toString() }.orEmpty()
+    fun knownClassNamesInPackage(fqName: FqName): Set<String> = javaClasses.filterKeys { it?.parentOrNull() == fqName }
+                                                                        .mapTo(hashSetOf()) { it.value.name.asString() } +
+                                                                elements.getPackageElement(fqName.asString())
+                                                                        ?.members_field
+                                                                        ?.elements
+                                                                        ?.filterIsInstance<Symbol.ClassSymbol>()
+                                                                        ?.map { it.name.toString() }.orEmpty()
 
     fun getTreePath(tree: JCTree, compilationUnit: CompilationUnitTree): TreePath = trees.getPath(compilationUnit, tree)
 
-    fun getKotlinClassifier(fqName: FqName) = kotlinClassifiersCache.getKotlinClassifier(fqName)
+    fun getKotlinClassifier(fqName: FqName): JavaClass? = kotlinClassifiersCache.getKotlinClassifier(fqName)
 
     fun isDeprecated(element: Element) = elements.isDeprecated(element)
 
     fun isDeprecated(typeMirror: TypeMirror) = isDeprecated(types.asElement(typeMirror))
 
-    fun resolve(treePath: TreePath) = treePathResolverCache.resolve(treePath)
+    fun resolve(treePath: TreePath): JavaClassifier? = treePathResolverCache.resolve(treePath)
 
-    fun toVirtualFile(javaFileObject: JavaFileObject) = javaFileObject.toUri().let {
+    fun toVirtualFile(javaFileObject: JavaFileObject): VirtualFile? = javaFileObject.toUri().let {
         if (it.scheme == "jar") {
             environment.findJarFile(it.schemeSpecificPart.substring("file:".length))
         } else {

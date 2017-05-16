@@ -61,7 +61,7 @@ internal fun TypeElement.computeClassId(): ClassId? {
 
 internal fun ExecutableElement.valueParameters(javac: JavacWrapper): List<JavaValueParameter> = parameters
         .mapIndexed { index, it ->
-            SymbolBasedValueParameter(it, it.simpleName.toString(), (index == parameters.lastIndex) && isVarArgs, javac)
+            SymbolBasedValueParameter(it, it.simpleName.toString(), index == parameters.lastIndex && isVarArgs, javac)
         }
 
 internal fun AnnotatedConstruct.findAnnotation(fqName: FqName,
