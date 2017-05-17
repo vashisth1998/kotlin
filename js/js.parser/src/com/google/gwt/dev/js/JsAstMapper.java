@@ -31,8 +31,12 @@ public class JsAstMapper {
 
     private final ScopeContext scopeContext;
 
-    public JsAstMapper(@NotNull JsScope scope) {
+    @NotNull
+    private final String fileName;
+
+    public JsAstMapper(@NotNull JsScope scope, @NotNull String fileName) {
         scopeContext = new ScopeContext(scope);
+        this.fileName = fileName;
     }
 
     private static JsParserException createParserException(String msg, Node offender) {
@@ -40,6 +44,10 @@ public class JsAstMapper {
     }
 
     private JsNode map(Node node) throws JsParserException {
+        return withLocation(mapWithoutLocation(node), node);
+    }
+
+    private JsNode mapWithoutLocation(Node node) throws JsParserException {
         switch (node.getType()) {
             case TokenStream.SCRIPT: {
                 JsBlock block = new JsBlock();
