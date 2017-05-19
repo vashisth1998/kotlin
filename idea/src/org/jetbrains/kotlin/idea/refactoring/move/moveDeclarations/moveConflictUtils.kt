@@ -218,7 +218,7 @@ class MoveConflictChecker(
         }
     }
 
-    fun checkModuleConflictsInDeclarations(
+    private fun checkModuleConflictsInDeclarations(
             internalUsages: MutableSet<UsageInfo>,
             conflicts: MultiMap<PsiElement, String>
     ) {
@@ -326,7 +326,7 @@ class MoveConflictChecker(
         }
     }
 
-    fun checkVisibilityInDeclarations(conflicts: MultiMap<PsiElement, String>) {
+    private fun checkVisibilityInDeclarations(conflicts: MultiMap<PsiElement, String>) {
         val targetContainer = moveTarget.getContainerDescriptor() ?: return
 
         fun DeclarationDescriptor.targetAwareContainingDescriptor(): DeclarationDescriptor? {
