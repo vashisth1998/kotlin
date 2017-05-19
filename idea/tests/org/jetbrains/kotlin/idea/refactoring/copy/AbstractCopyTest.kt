@@ -29,37 +29,21 @@ import org.jetbrains.kotlin.idea.jsonUtils.getString
 import org.jetbrains.kotlin.idea.refactoring.AbstractMultifileRefactoringTest
 import org.jetbrains.kotlin.idea.refactoring.copy.CopyKotlinDeclarationsHandler.Companion.newName
 import org.jetbrains.kotlin.idea.refactoring.runRefactoringTest
-import org.jetbrains.kotlin.idea.refactoring.toPsiDirectory
 import org.jetbrains.kotlin.idea.util.application.runWriteAction
 import org.jetbrains.kotlin.utils.ifEmpty
 
-abstract class AbstractCopyTest : AbstractMultifileRefactoringTest() {
-    companion object : RefactoringAction {
-        fun runCopyRefactoring(path: String, config: JsonObject, rootDir: VirtualFile, project: Project) {
-            runRefactoringTest(path, config, rootDir, project, this)
-        }
+abstract class AbstractCopyTest : AbstractMultifileRefactoringTest(), AbstractMultifileRefactoringTest.RefactoringAction {
+    override fun runRefactoring(rootDir: VirtualFile, mainFile: PsiFile, elementsAtCaret: List<PsiElement>, config: JsonObject) {
+        val elementsToCopy = elementsAtCaret.ifEmpty { listOf(mainFile) }.toTypedArray()
+        assert(CopyHandler.canCopy(elementsToCopy))
 
-        override fun runRefactoring(rootDir: VirtualFile, mainFile: PsiFile, elementsAtCaret: List<PsiElement>, config: JsonObject) {
-            val project = mainFile.project
-
-            val elementsToCopy = elementsAtCaret.ifEmpty { listOf(mainFile) }.toTypedArray()
-            assert(CopyHandler.canCopy(elementsToCopy))
-
-            val targetDirectory = config.getNullableString("targetDirectory")?.let {
-                rootDir.findFileByRelativePath(it)?.toPsiDirectory(project)
-            }
-            ?: run {
-                val packageWrapper = PackageWrapper(mainFile.manager, config.getString("targetPackage"))
-                runWriteAction { MultipleRootsMoveDestination(packageWrapper).getTargetDirectory(mainFile) }
-            }
-
-            project.newName = config.getNullableString("newName")
-
-            CopyHandler.doCopy(elementsToCopy, targetDirectory)
-        }
+        val packageWrapper = PackageWrapper(mainFile.manager, config.getString("targetPackage"))
+        project.newName = config.getNullableString("newName")
+        val targetDirectory = runWriteAction { MultipleRootsMoveDestination(packageWrapper).getTargetDirectory(mainFile) }
+        CopyHandler.doCopy(elementsToCopy, targetDirectory)
     }
 
     override fun runRefactoring(path: String, config: JsonObject, rootDir: VirtualFile, project: Project) {
-        runCopyRefactoring(path, config, rootDir, project)
+        runRefactoringTest(path, config, rootDir, project, this)
     }
 }
