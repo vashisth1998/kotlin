@@ -21150,6 +21150,24 @@ public class DiagnosticsTestGenerated extends AbstractDiagnosticsTest {
                     doTest(fileName);
                 }
 
+                @TestMetadata("setNotNullInTry.kt")
+                public void testSetNotNullInTry() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/varnotnull/setNotNullInTry.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("setNullInTry.kt")
+                public void testSetNullInTry() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/varnotnull/setNullInTry.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("setNullInTryFinally.kt")
+                public void testSetNullInTryFinally() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/varnotnull/setNullInTryFinally.kt");
+                    doTest(fileName);
+                }
+
                 @TestMetadata("toFlexibleType.kt")
                 public void testToFlexibleType() throws Exception {
                     String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/varnotnull/toFlexibleType.kt");
