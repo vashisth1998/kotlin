@@ -513,11 +513,19 @@ public class ControlStructureTypingVisitor extends ExpressionTypingVisitor {
             }
         }
 
-        KotlinTypeInfo result = TypeInfoFactoryKt.noTypeInfo(context);
         KotlinTypeInfo tryResult = facade.getTypeInfo(tryBlock, context);
+        ExpressionTypingContext tryOutputContext = context.replaceExpectedType(NO_EXPECTED_TYPE);
+        if (!nothingInAllCatchBranches) {
+            PreliminaryLoopVisitor tryVisitor = PreliminaryLoopVisitor.visitTryBlock(expression);
+            tryOutputContext = tryOutputContext.replaceDataFlowInfo(
+                    tryVisitor.clearDataFlowInfoForAssignedLocalVariables(tryOutputContext.dataFlowInfo,
+                                                                          components.languageVersionSettings)
+            );
+        }
+
+        KotlinTypeInfo result = TypeInfoFactoryKt.noTypeInfo(tryOutputContext);
         if (finallyBlock != null) {
-            result = facade.getTypeInfo(finallyBlock.getFinalExpression(),
-                                        context.replaceExpectedType(NO_EXPECTED_TYPE));
+            result = facade.getTypeInfo(finallyBlock.getFinalExpression(), tryOutputContext);
         }
         else if (nothingInAllCatchBranches) {
             result = tryResult;

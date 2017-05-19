@@ -10,5 +10,5 @@ fun foo() {
     finally {
         bar()
     }
-    <!DEBUG_INFO_SMARTCAST!>s<!>.hashCode()
+    s<!UNSAFE_CALL!>.<!>hashCode()
 }

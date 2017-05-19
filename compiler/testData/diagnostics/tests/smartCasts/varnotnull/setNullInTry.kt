@@ -4,5 +4,5 @@ fun foo() {
     try {
         s = null
     } catch (ex: Exception) {}
-    <!DEBUG_INFO_SMARTCAST!>s<!>.hashCode()
+    s<!UNSAFE_CALL!>.<!>hashCode()
 }
