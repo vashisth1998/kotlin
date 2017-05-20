@@ -569,12 +569,12 @@ fun generators(): List<GenericFunction> {
             sliding along this ${f.collection} with the given [step].
 
             Note that the ${f.viewResult} passed to the [transform] function is ephemeral and is valid only inside that function.
-            You should not store it or allow it escape someway, unless you made a snapshot of it.
+            You should not store it or allow it to escape in some way, unless you made a snapshot of it.
             Several last ${f.viewResult.pluralize()} may have less ${f.element.pluralize()} than the given [size].
 
             Both [size] and [step] must be positive and can be greater than the number of elements in this ${f.collection}.
             @param size the number of elements to take in each window
-            @param step the number of elements to move window forward on an each step
+            @param step the number of elements to move the window forward by on an each step
 
             @sample samples.collections.Sequences.Transformations.averageWindows
             """
@@ -646,7 +646,7 @@ fun generators(): List<GenericFunction> {
 
             Both [size] and [step] must be positive and can be greater than the number of elements in this ${f.collection}.
             @param size the number of elements to take in each window
-            @param step the number of elements to move window forward on an each step
+            @param step the number of elements to move the window forward by on an each step
 
             @sample samples.collections.Sequences.Transformations.takeWindows
             """
@@ -690,12 +690,12 @@ fun generators(): List<GenericFunction> {
             sliding along this ${f.collection} with the given [step].
 
             Note that the ${f.viewResult} passed to the [transform] function is ephemeral and is valid only inside that function.
-            You should not store it or allow it escape someway, unless you made a snapshot of it.
+            You should not store it or allow it to escape in some way, unless you made a snapshot of it.
             Several last ${f.viewResult.pluralize()} may have less ${f.element.pluralize()} than the given [size].
 
             Both [size] and [step] must be positive and can be greater than the number of elements in this ${f.collection}.
             @param size the number of elements to take in each window
-            @param step the number of elements to move window forward on an each step
+            @param step the number of elements to move the window forward by on an each step
 
             @sample samples.collections.Sequences.Transformations.averageWindows
             """
@@ -724,7 +724,7 @@ fun generators(): List<GenericFunction> {
 
             Both [size] and [step] must be positive and can be greater than the number of elements in this ${f.collection}.
             @param size the number of elements to take in each window
-            @param step the number of elements to move window forward on an each step
+            @param step the number of elements to move the window forward by on an each step
 
             @sample samples.collections.Sequences.Transformations.takeWindows
             """
@@ -745,7 +745,7 @@ fun generators(): List<GenericFunction> {
             @return ${f.mapResult} of results of the [transform] applied to an each ${f.viewResult}.
 
             Note that the ${f.viewResult} passed to the [transform] function is ephemeral and is valid only inside that function.
-            You should not store it or allow it escape someway, unless you made a snapshot of it.
+            You should not store it or allow it to escape in some way, unless you made a snapshot of it.
             The last ${f.viewResult} may have less ${f.element.pluralize()} than the given [size].
 
             @param size the number of elements to take in each ${f.viewResult}, must be positive and can be greater than the number of elements in this ${f.collection}.
@@ -798,7 +798,7 @@ fun generators(): List<GenericFunction> {
             @return sequence of results of the [transform] applied to an each ${f.viewResult}.
 
             Note that the ${f.viewResult} passed to the [transform] function is ephemeral and is valid only inside that function.
-            You should not store it or allow it to escape someway, unless you made a snapshot of it.
+            You should not store it or allow it to escape in some way, unless you made a snapshot of it.
             The last ${f.viewResult} may have less ${f.element.pluralize()} than the given [size].
 
             @param size the number of elements to take in each ${f.viewResult}, must be positive and can be greater than the number of elements in this ${f.collection}.
