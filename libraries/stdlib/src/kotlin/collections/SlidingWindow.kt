@@ -21,9 +21,9 @@ import kotlin.coroutines.experimental.buildIterator
 internal fun checkWindowSizeStep(size: Int, step: Int) {
     require(size > 0 && step > 0) {
         if (size != step)
-            "size $size and step $step both must be greater than zero"
+            "Both size $size and step $step must be greater than zero."
         else
-            "size $size must be greater than zero"
+            "size $size must be greater than zero."
     }
 }
 
@@ -167,7 +167,7 @@ private class RingBuffer<T>(val capacity: Int): AbstractList<T>(), RandomAccess 
      */
     fun add(element: T) {
         if (isFull()) {
-            throw IllegalStateException("ring buffer is full")
+            throw IllegalStateException("Ring buffer is full.")
         }
 
         buffer[startIndex.forward(size)] = element
