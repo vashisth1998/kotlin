@@ -1053,8 +1053,7 @@ public class Parser extends Observable {
                                 property = nf.createString(ts.getString(), ts.tokenPosition);
                                 break;
                             case TokenStream.NUMBER_INT:
-                                int n = (int) ts.getNumber();
-                                property = nf.createNumber(n, ts.tokenPosition);
+                                property = nf.createIntNumber(ts.getNumber(), ts.tokenPosition);
                                 break;
                             case TokenStream.NUMBER:
                                 double d = ts.getNumber();
@@ -1099,8 +1098,7 @@ public class Parser extends Observable {
                 return nf.createName(name, position);
 
             case TokenStream.NUMBER_INT:
-                int n = (int) ts.getNumber();
-                return nf.createNumber(n, position);
+                return nf.createIntNumber(ts.getNumber(), position);
 
             case TokenStream.NUMBER:
                 double d = ts.getNumber();
